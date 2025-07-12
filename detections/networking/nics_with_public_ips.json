@@ -1,0 +1,11 @@
+{
+  "id": "network-nic-public-ip",
+  "title": "NICs with Public IPs",
+  "description": "Detect network interfaces that expose public IP addresses.",
+  "category": "Networking",
+  "severity": "High",
+  "policyAssignment": "AuditNICsWithPublicIPs",
+  "policyDefinitionId": "83a86a26-fd1f-447c-b59d-e51f44264114",
+  "detectionLogic": "ipConfigurations[*].publicIpAddress.id != null",
+  "resolution": "Ensure network interfaces are not assigned public IPs unless explicitly required."
+}
