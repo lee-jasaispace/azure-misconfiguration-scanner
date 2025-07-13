@@ -1,0 +1,42 @@
+<#
+==========================================================
+Detection Pattern: NICs with Public IPs (Noncompliance)
+==========================================================
+This PowerShell script queries Azure Policy state for noncompliant
+network interfaces that have public IPs assigned, violating the
+policy: "Network interfaces should not have public IPs".
+#>
+
+# Define variables
+$resourceGroup = "RG-TestNICPOLICY"
+$policyIdFragment = "83a86a26"  # Partial match for the policy definition ID
+
+# Run the query
+$results = az policy state list `
+  --resource-group $resourceGroup `
+  --query "[?contains(policyDefinitionId, '$policyIdFragment')]" `
+  --output json | ConvertFrom-Json
+
+# Display key results in table format
+$results | ForEach-Object {
+    [PSCustomObject]@{
+        ComplianceState     = $_.complianceState
+        IsCompliant         = $_.isCompliant
+        PolicyName          = $_.policyAssignmentName
+        ResourceGroup       = $_.resourceGroup
+        ResourceType        = $_.resourceType
+        ResourceId          = $_.resourceId
+    }
+} | Format-Table -AutoSize
+
+<#
+Sample Output:
+
+ComplianceState IsCompliant PolicyName               ResourceGroup     ResourceType                         ResourceId
+--------------- ----------- ------------------------ ----------------- ------------------------------------ -------------------------------------------------------------
+NonCompliant    False       AuditNICsWithPublicIPs   RG-TestNICPOLICY  Microsoft.Network/networkInterfaces /subscriptions/xxxx/resourceGroups/RG-TestNICPOLICY/...
+
+#>
+
+# Optional: Save results to file
+$results | ConvertTo-Json -Depth 5 | Out-File "./queries/nics-with-public-ips-results.json"
